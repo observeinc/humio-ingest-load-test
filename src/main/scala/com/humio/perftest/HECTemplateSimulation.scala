@@ -17,7 +17,6 @@ object HECTemplateSimulation {
   val dataspaces = Option(System.getProperty("dataspaces")).getOrElse("1").toInt
   val templateFile = Option(System.getProperty("template")).getOrElse("templates/test.ssp")
   val simTemplate = new SimTemplate(templateFile)
-
   def request(): String = (for (i <- 0 until eventsPerBulk) yield simTemplate.generate).mkString("\n")
 }
 
@@ -29,7 +28,8 @@ class HECTemplateSimulation extends Simulation {
   val timeInMinutes = Option(System.getProperty("time")).getOrElse("300").toInt
   val token = Option(System.getProperty("token")).getOrElse("developer")
   val meanPauseDurationMs = Option(System.getProperty("pausetime")).getOrElse("10").toInt
-  val baseUrlString = Option(System.getProperty("baseurls")).getOrElse("https://testcloud01.humio.com")
+  val baseUrlString = Option(System.getProperty("baseurls")).getOrElse("https://www.observe.com")
+  val endPoint = Option(System.getProperty("endPoint")).getOrElse("/v1/http")
   val baseUrls = baseUrlString.split(",").toList
 
   println(s"Configuration:\n")
@@ -37,6 +37,8 @@ class HECTemplateSimulation extends Simulation {
   println(s"time=$timeInMinutes minutes")
   println(s"token=$token")
   println(s"baseurls=${baseUrlString}  (Comma-separated)")
+  println(s"endPoint=${endPoint}")
+  println(s"FullUrl=${baseUrlString}${endPoint}")
   println(s"dataspaces=$dataspaces")
   println(s"bulksize=$eventsPerBulk")
   println(s"template=$templateFile")
@@ -57,7 +59,7 @@ class HECTemplateSimulation extends Simulation {
     .during(timeInMinutes minutes) {
       feed(dataspaceFeeder).feed(requestFeeder)
         .exec(http("request_1")
-          .post("/api/v1/ingest/hec")
+          .post(endPoint)
           .body(StringBody("${request}"))
           .processRequestBody(gzipBody)
           .check(status.is(200))

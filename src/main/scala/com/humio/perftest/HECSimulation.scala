@@ -66,13 +66,15 @@ class HECSimulation extends Simulation {
   val token = Option(System.getProperty("token")).getOrElse("developer")
 
   val baseUrlString = Option(System.getProperty("baseurls")).getOrElse("https://testcloud01.humio.com")
-
+  val endPoint = Option(System.getProperty("endPoint")).getOrElse("/v1/http")
   val baseUrls = baseUrlString.split(",").toList
 
   println(s"configured users=$users")
   println(s"configured time=$timeInMinutes minutes")
   println(s"token=$token")
   println(s"baseurls=${baseUrlString}  (Comma-separated)")
+  println(s"endPoint=${endPoint}")
+  println(s"FullUrl=${baseUrlString}${endPoint}")
   println(s"fields=$fieldCount")
   println(s"datasources=$datasourcesPerDataspace")
   println(s"eventsize=$eventSize")
@@ -84,22 +86,19 @@ class HECSimulation extends Simulation {
   }
 
   val httpConf = http
-    .baseUrls(baseUrls) // Here is the root for all relative URLs
-    .contentTypeHeader("application/json")
-    .acceptHeader("application/json") // Here are the common headers
-    .header("Content-Encoding", "gzip") // Matches the processRequestBody(gzipBody)
-    .acceptEncodingHeader("*") // "*" or "gzip" or "deflate" or "compress" or "identity"
+    .baseUrls(baseUrls)
+    .contentTypeHeader("text/plain; charset=utf-8")
+    .acceptHeader("application/json")
+    .header("Content-Encoding", "gzip")
+    .acceptEncodingHeader("*")
     .userAgentHeader("gatling client")
-    //.basicAuth("qcSmluq1kkS9xuheGLdFagWRuEBpD5gu", "")
-    //.basicAuth("", token)
-    .authorizationHeader(s"Bozon ${token}")
-    //.header("Authorization", "Bearer: ${token}")
+    .authorizationHeader(s"Bearer ${token}")
 
   val scn = scenario("HEC ingestion") // A scenario is a chain of requests and pauses
       .during(timeInMinutes minutes) {
         feed(dataspaceFeeder).feed(requestFeeder)
         .exec(http("request_1")
-          .post("/services/collector")
+          .post(endPoint)
           .body(StringBody("${request}"))
           .processRequestBody(gzipBody)
           .check(status.is(200))
