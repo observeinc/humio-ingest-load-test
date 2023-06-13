@@ -44,6 +44,7 @@ class HECTemplateSimulation extends Simulation {
   println(s"template=$templateFile")
   println(s"meanPauseDurationMs=$meanPauseDurationMs")
 
+
   override def before(step: => Unit): Unit = super.before(step)
 
   val httpConf = http
