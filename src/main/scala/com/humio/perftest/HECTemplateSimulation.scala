@@ -7,7 +7,6 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import org.apache.commons.math3.distribution.UniformRealDistribution
 import org.fusesource.scalate.{ Binding, TemplateEngine }
-
 import scala.concurrent.duration._
 import scala.util.Random
 
@@ -17,7 +16,8 @@ object HECTemplateSimulation {
   val dataspaces = Option(System.getProperty("dataspaces")).getOrElse("1").toInt
   val templateFile = Option(System.getProperty("template")).getOrElse("templates/test.ssp")
   val simTemplate = new SimTemplate(templateFile)
-  def request(): String = (for (i <- 0 until eventsPerBulk) yield simTemplate.generate).mkString("\n")
+  //def request(): String = (for (i <- 0 until eventsPerBulk) yield simTemplate.generate).mkString("\n")
+  def request(): String = (for (i <- 0 until eventsPerBulk) yield simTemplate.generate).mkString("")
 }
 
 import HECTemplateSimulation._
@@ -43,7 +43,6 @@ class HECTemplateSimulation extends Simulation {
   println(s"bulksize=$eventsPerBulk")
   println(s"template=$templateFile")
   println(s"meanPauseDurationMs=$meanPauseDurationMs")
-
 
   override def before(step: => Unit): Unit = super.before(step)
 
